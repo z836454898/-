@@ -1,6 +1,7 @@
+<script src="../../../store/modules/activity.js"></script>
 <template>
   <div :class="{'has-logo':showLogo}">
-    <logo v-if="showLogo" :collapse="isCollapse" />
+    <logo v-if="showLogo" :collapse="isCollapse"/>
     <el-scrollbar wrap-class="scrollbar-wrapper">
       <el-menu
         :default-active="activeMenu"
@@ -12,30 +13,40 @@
         :collapse-transition="false"
         mode="vertical"
       >
-        <sidebar-item v-for="route in routes" :key="route.path" :item="route" :base-path="route.path" />
+        <sidebar-item v-for="route in routes" :key="route.path" :item="route" :base-path="route.path"/>
       </el-menu>
     </el-scrollbar>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import {mapGetters} from 'vuex'
 import Logo from './Logo'
 import SidebarItem from './SidebarItem'
 import variables from '@/styles/variables.scss'
+import {getRole} from "@/utils/auth";
 
 export default {
-  components: { SidebarItem, Logo },
+  components: {SidebarItem, Logo},
   computed: {
     ...mapGetters([
       'sidebar'
     ]),
     routes() {
-      return this.$router.options.routes
+      const role = getRole()
+      return this.$router.options.routes.filter(value => {
+        if (!value.meta || !value.meta.rule) {
+          return value
+        } else {
+          if (value.meta.rule === role) {
+            return value
+          }
+        }
+      })
     },
     activeMenu() {
       const route = this.$route
-      const { meta, path } = route
+      const {meta, path} = route
       // if set path, the sidebar will highlight the path you set
       if (meta.activeMenu) {
         return meta.activeMenu
